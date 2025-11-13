@@ -8,6 +8,19 @@
     --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     --transition: all 0.3s ease;
 }
+#particle-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    background: transparent;
+    pointer-events: none;
+}
+body > *:not(canvas) {
+    position: relative;
+    z-index: 1;
+}
 
 .dark-mode {
     --text-color: #e0e0e0;
@@ -575,3 +588,4 @@ section {
         font-size: 100px;
     }
 }
+
