@@ -1,6 +1,119 @@
 // Dark Mode Toggle
 const darkModeToggle = document.getElementById('darkModeToggle');
 const body = document.body;
+// Particle Network Canvas Effect
+
+const canvas = document.getElementById('particle-canvas');
+const ctx = canvas.getContext('2d');
+
+let particles = [];
+const PARTICLE_NUM = 60; // عدد النقاط
+const CONNECT_DISTANCE = 120; // المسافة المسموح بها للرسم بين النقاط
+let mouse = { x: null, y: null };
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+function randomBetween(a, b) {
+    return Math.random() * (b - a) + a;
+}
+
+// Particle Class
+function Particle() {
+    this.x = randomBetween(0, canvas.width);
+    this.y = randomBetween(0, canvas.height);
+    this.radius = randomBetween(2, 3.2);
+    this.vx = randomBetween(-0.6, 0.6);
+    this.vy = randomBetween(-0.6, 0.6);
+}
+Particle.prototype.draw = function() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+    ctx.fillStyle = "#6C63FF";
+    ctx.globalAlpha = 0.7;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+};
+function createParticles() {
+    particles = [];
+    for (let i = 0; i < PARTICLE_NUM; i++) {
+        particles.push(new Particle());
+    }
+}
+createParticles();
+
+// Update Particle Positions
+function updateParticles() {
+    for (let i = 0; i < PARTICLE_NUM; i++) {
+        let p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+
+        // Bounce from the edges
+        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+    }
+}
+
+// Draw Connections between close particles
+function drawConnections() {
+    for (let i = 0; i < PARTICLE_NUM; i++) {
+        for (let j = i + 1; j < PARTICLE_NUM; j++) {
+            let dx = particles[i].x - particles[j].x;
+            let dy = particles[i].y - particles[j].y;
+            let distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < CONNECT_DISTANCE) {
+                ctx.beginPath();
+                ctx.strokeStyle = "rgba(108,99,255,0.19)";
+                ctx.lineWidth = 1.2;
+                ctx.moveTo(particles[i].x, particles[i].y);
+                ctx.lineTo(particles[j].x, particles[j].y);
+                ctx.stroke();
+            }
+        }
+    }
+    // Connect mouse to close particles
+    if (mouse.x && mouse.y) {
+        for (let i = 0; i < PARTICLE_NUM; i++) {
+            let dx = particles[i].x - mouse.x;
+            let dy = particles[i].y - mouse.y;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < CONNECT_DISTANCE) {
+                ctx.beginPath();
+                ctx.strokeStyle = "rgba(76,175,80,0.5)";
+                ctx.lineWidth = 2;
+                ctx.moveTo(particles[i].x, particles[i].y);
+                ctx.lineTo(mouse.x, mouse.y);
+                ctx.stroke();
+            }
+        }
+    }
+}
+
+canvas.addEventListener('mousemove', function(e){
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+});
+canvas.addEventListener('mouseleave', function(){
+    mouse.x = null;
+    mouse.y = null;
+});
+
+// Animation Loop
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    updateParticles();
+    for (let i = 0; i < PARTICLE_NUM; i++) {
+        particles[i].draw();
+    }
+    drawConnections();
+    requestAnimationFrame(animate);
+}
+animate();
 
 darkModeToggle.addEventListener('click', () => {
     body.classList.toggle('dark-mode');
@@ -130,3 +243,4 @@ document.querySelectorAll('.btn, .btn-small').forEach(btn => {
         setTimeout(() => ripple.remove(), 600);
     });
 });
+
